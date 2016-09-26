@@ -35,8 +35,8 @@ class Thumbnail(object):
 
         :param img_url: url img - '/assets/media/summer.jpg'
         :param size: size return thumb - '100x100'
-        :param crop: crop return thumb - 'fit' or None
-        :param bg: tuple color or None - (255, 255, 255, 0)
+        :param crop: crop return thumb - 'fit' or 'ResizeToFill' or None
+        :param bg_color: color of background if crop == 'ResizeToFill' - '#000000' or (0, 0, 0)
         :param quality: JPEG quality 1-100
         :return: :thumb_url:
         """
@@ -66,12 +66,13 @@ class Thumbnail(object):
 
             if crop == 'fit':
                 img = ImageOps.fit(image, thumb_size, Image.ANTIALIAS)
+            elif crop == 'ResizeToFill':
+                img = image.copy()
+                img.thumbnail((width, height), Image.ANTIALIAS)
+                img = self._bg(img, thumb_size, bg_color)
             else:
                 img = image.copy()
                 img.thumbnail((width, height), Image.ANTIALIAS)
-
-            if bg:
-                img = self._bg(img, thumb_size, bg_color)
 
             img.save(thumb_filename, image.format, quality=quality)
 
