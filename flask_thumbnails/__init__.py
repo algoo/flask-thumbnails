@@ -30,7 +30,7 @@ class Thumbnail(object):
 
         app.jinja_env.filters['thumbnail'] = self.thumbnail
 
-    def thumbnail(self, img_url, size, crop=None, bg=None, quality=85):
+    def thumbnail(self, img_url, size, crop=None, bg=False, bg_color=None, quality=85):
         """
 
         :param img_url: url img - '/assets/media/summer.jpg'
@@ -71,17 +71,16 @@ class Thumbnail(object):
                 img.thumbnail((width, height), Image.ANTIALIAS)
 
             if bg:
-                img = self._bg_square(img, bg)
+                img = self._bg(img, thumb_size, bg_color)
 
             img.save(thumb_filename, image.format, quality=quality)
 
             return thumb_url
 
     @staticmethod
-    def _bg_square(img, color=0xff):
-        size = (max(img.size),) * 2
-        layer = Image.new('L', size, color)
-        layer.paste(img, tuple(map(lambda x: (x[0] - x[1]) / 2, zip(size, img.size))))
+    def _bg(img, size, color=None):
+        layer = Image.new('RGBA', size, color)
+        layer.paste(img, tuple(map(lambda x: int((x[0] - x[1]) / 2), zip(size, img.size))))
         return layer
 
     @staticmethod
@@ -99,7 +98,7 @@ class Thumbnail(object):
     def _get_name(name, fm, *args):
         for v in args:
             if v:
-                name += '_%s' % v
+                name += '_%s' % str(v).replace('#', '_')
         name += fm
 
         return name
